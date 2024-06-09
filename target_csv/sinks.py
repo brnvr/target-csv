@@ -48,10 +48,6 @@ class CSVSink(BatchSink):
     @property
     def output_file(self) -> Path:  # noqa: D102
         filename = self.config["file_naming_scheme"]
-        for key, val in self.filepath_replacement_map.items():
-            replacement_pattern = "{" f"{key}" "}"
-            if replacement_pattern in filename:
-                filename = filename.replace(replacement_pattern, val)
 
         if "output_path_prefix" in self.config:
             warnings.warn(
@@ -70,6 +66,15 @@ class CSVSink(BatchSink):
                 "destination_path", self.config.get("output_path_prefix", None)
             ),
         )
+
+        for key, val in self.filepath_replacement_map.items():
+            replacement_pattern = "{" f"{key}" "}"
+            if replacement_pattern in filename:
+                filename = filename.replace(replacement_pattern, val)
+
+            #also perform substitution on output_path
+            if output_path is not None and replacement_pattern in output_path:
+                output_path = output_path.replace(replacement_pattern, val)
 
         filepath = Path(filename)
         if output_path is not None:
